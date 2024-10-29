@@ -5,6 +5,7 @@ from pystray import Icon, MenuItem, Menu
 from PIL import Image, ImageDraw
 import win32com.client
 import subprocess
+import os
 
 def get_device_info(port):
     wmi = win32com.client.GetObject("winmgmts:")
@@ -23,6 +24,10 @@ def create_image():
         (width // 2 - 10, height // 2 - 10, width // 2 + 10, height // 2 + 10),
         fill='black')
     return image
+
+# Funzione per creare l'icona della system tray da un file ICO
+def create_icon_from_file(icon_path):
+    return Image.open(icon_path)
 
 def open_device_manager(icon, item):
     subprocess.run('devmgmt.msc', shell=True)
@@ -52,7 +57,14 @@ def monitor_ports():
         previous_ports = current_ports
         time.sleep(1)
 
-icon = Icon('USB Monitor v.0.2', create_image(), menu=Menu(MenuItem('Open device manager', open_device_manager),  MenuItem('Quit', lambda: icon.stop())))
+icon_file   =   os.path.join    ( os.path.dirname(os.path.abspath(__file__)), 'usb_monitor.ico' )
+
+if os.path.exists( icon_file ):
+    icon_img    =   create_icon_from_file   ( icon_file )
+else:
+    icon_img    =   create_image()
+
+icon = Icon('USB Monitor', icon_img, 'USB Monitor v.0.3', menu=Menu(MenuItem('Open device manager', open_device_manager),  MenuItem('Quit', lambda: icon.stop())))
 
 def run_icon():
     icon.run()
